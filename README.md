@@ -1,6 +1,6 @@
 # goal-forge
 
-![Goal Forge cover](assets/readme-cover.svg)
+![Goal Forge cover](assets/readme-cover-sidecar.svg)
 
 Codex skill that turns a rough coding idea into a Codex `/goal`-ready contract.
 
