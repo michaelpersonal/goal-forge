@@ -4,20 +4,36 @@
 
 Codex skill that turns a rough coding idea into a Codex `/goal`-ready contract.
 
-Pipeline: **rough idea → interviewed `SPEC.md` → tightened `SPEC.md` → `GOAL.md` → config readiness check**.
+Pipeline: **rough idea → interviewed `SPEC.md` → tightened `SPEC.md` → budgeted `GOAL.md` → config readiness check**.
 
-Goal Forge now treats long-running `/goal` work as a runtime system with four explicit parts:
+Goal Forge treats long-running `/goal` work as a runtime system with five explicit parts:
 
+- **Budget** — optional ceilings on elapsed time, cost, iterations, or parallel work, with warning and exhaustion behavior.
 - **Scorecard** — the metric, checklist, threshold, regression checks, and stop condition Codex should use to judge progress.
 - **Feedback loop** — the fastest representative check Codex can run repeatedly while iterating, plus the slower final check used before completion.
 - **Working memory** — markdown files such as `PLAN.md`, `ATTEMPTS.md`, and `NOTES.md` that keep multi-hour runs coherent across context compaction.
 - **Human control surface** — an optional compact `CONTROL.md` with task-specific knobs, sidecar inputs, resource limits, and pivot gates the user can inspect or tune while a goal runs.
 
+A request such as `5 hour budget max` compiles into an explicit contract:
+
+```xml
+<budget>
+max_elapsed_time: 5h
+warning_at: 4h30m
+check_interval: 15m
+on_warning: checkpoint_and_prioritize
+on_exhaustion: checkpoint_and_stop
+extension_policy: explicit_user_approval
+</budget>
+```
+
+The budget is a ceiling, not a target. The run should finish as soon as `done_when` passes. Prompt-level budgets guide agent behavior; use an external supervisor when hard process termination is required.
+
 ## Modes
 
-- **Interview** — open-ended interview that forces decisions on scope, architecture, edge cases, verification. Hard gate: spec is not "done" until `done_when` has user-approved measurable criteria.
+- **Interview** — open-ended interview that forces decisions on scope, architecture, edge cases, verification, and resource budgets. Hard gate: spec is not "done" until `done_when` has user-approved measurable criteria.
 - **Tighten** — read `SPEC.md` skeptically; surface ambiguities with two interpretations + a recommendation.
-- **Compile** — emit `GOAL.md` using the XML block structure in `references/goal_prompt_blocks.md`. Weak specs route back to Interview/Tighten, especially when scorecard, feedback loop, or long-run working memory are missing.
+- **Compile** — emit `GOAL.md` using the XML block structure in `references/goal_prompt_blocks.md`. Weak specs route back to Interview/Tighten, especially when scorecard, feedback loop, budget semantics, or long-run working memory are missing.
 - **Check config** — run `scripts/inspect_codex_config.py` for a read-only report on Codex version, project trust, and the full autonomous `/goal` config.
 
 ## Install
@@ -66,7 +82,8 @@ goal-forge/
 ├── SKILL.md
 ├── agents/openai.yaml                       UI metadata + implicit invocation
 ├── references/
-│   ├── goal_prompt_blocks.md                GOAL.md XML structure, including scorecard, feedback loop, and working memory
+│   ├── goal_prompt_blocks.md                GOAL.md XML structure, including budget, scorecard, feedback loop, and working memory
+│   ├── budget_contract.md                   Budget normalization, warning, exhaustion, and extension rules
 │   ├── config_checklist.md                  Long-running /goal config notes
 │   ├── control_surface_templates.md         Optional CONTROL.md knobs and sidecar collaboration patterns
 │   ├── standard_execution_rules.md          Compile-time execution rules
@@ -77,7 +94,7 @@ goal-forge/
 
 ## Credits
 
-Inspired by [@ynkzlk](https://x.com/ynkzlk)'s blog post [*Codex /goal: A Six-Hour Run*](https://www.tectontide.com/en/blog/codex-goal-six-hour-run/), which makes the case that long-running `/goal` runs succeed or fail on upfront specification discipline — explicit measurable `done_when` criteria, XML-structured prompts, and context architecture (reading lists, working rules, anti-pattern fences) that keep the agent from taking shortcuts. This skill operationalizes that discipline as a repeatable pipeline.
+Inspired by [@ynkzlk](https://x.com/ynkzlk)'s blog post [*Codex /goal: A Six-Hour Run*](https://www.tectontide.com/en/blog/codex-goal-six-hour-run/), which makes the case that long-running `/goal` runs succeed or fail on upfront specification discipline: explicit measurable `done_when` criteria, XML-structured prompts, and context architecture that keep the agent from taking shortcuts. This skill operationalizes that discipline as a repeatable pipeline.
 
 ## License
 
